@@ -5,13 +5,26 @@ on:
     tags:
       - 'v*'
 
+# Grant explicit permissions so the workflow can create releases using GITHUB_TOKEN
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
+    # Use a personal access token when available. Create a repo secret named RELEASE_TOKEN
+    # with a PAT that has 'repo' scope if your organization blocks GITHUB_TOKEN from creating releases.
+    env:
+      GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # fetch full history so tags are available
+          fetch-depth: 0
+          # keep the default token so subsequent steps can use it
+          persist-credentials: true
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -29,9 +42,11 @@ jobs:
 
       - name: Create GitHub Release
         id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: actions/create-release@v1
         with:
           tag_name: ${{ github.ref_name }}
+          release_name: ${{ github.ref_name }}
+          body: "Release created by GitHub Actions for ${{ github.ref_name }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
