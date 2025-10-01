@@ -1,0 +1,1 @@
+Wrote 5 patients to: e:\projects\cs489\pamscli\patients.json

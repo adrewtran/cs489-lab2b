@@ -1,0 +1,55 @@
+name: Java CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Cache Maven local repository
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2-
+
+      - name: Build with Maven
+        run: mvn -B clean package
+
+      - name: Run application to generate patients.json
+        run: |
+          # run the packaged jar to create patients.json in the workspace
+          java -jar target/pamscli-1.0-SNAPSHOT.jar || true
+
+      - name: Upload patients.json artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: patients-json
+          path: |
+            patients.json
+
+      - name: Upload built jar artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pamscli-jar
+          path: |
+            target/pamscli-1.0-SNAPSHOT.jar
+
