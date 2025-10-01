@@ -40,6 +40,16 @@ jobs:
           # run the packaged jar to create patients.json
           java -jar target/pamscli-1.0-SNAPSHOT.jar || true
 
+      - name: Run verify RELEASE_TOKEN
+        run: |
+          echo "Checking repository access with the provided RELEASE_TOKEN..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: token ${{ secrets.RELEASE_TOKEN }}" https://api.github.com/repos/adrewtran/cs489-lab2b)
+          echo "HTTP status code: $STATUS"
+          if [ "$STATUS" -ne 200 ]; then
+            echo "RELEASE_TOKEN cannot access repository (HTTP $STATUS). Please ensure the PAT has 'repo' scope and is authorized for the organization (SSO)." >&2
+            exit 1
+          fi
+
       - name: Create GitHub Release
         id: create_release
         uses: actions/create-release@v1
@@ -47,7 +57,6 @@ jobs:
           tag_name: ${{ github.ref_name }}
           release_name: ${{ github.ref_name }}
           body: "Release created by GitHub Actions for ${{ github.ref_name }}"
-          token: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Upload JAR to Release
         uses: actions/upload-release-asset@v1
@@ -56,7 +65,6 @@ jobs:
           asset_path: target/pamscli-1.0-SNAPSHOT.jar
           asset_name: pamscli-1.0-SNAPSHOT.jar
           asset_content_type: application/java-archive
-          token: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Upload patients.json to Release
         uses: actions/upload-release-asset@v1
@@ -65,4 +73,3 @@ jobs:
           asset_path: patients.json
           asset_name: patients.json
           asset_content_type: application/json
-          token: ${{ secrets.RELEASE_TOKEN }}
