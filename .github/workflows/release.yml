@@ -47,6 +47,7 @@ jobs:
           tag_name: ${{ github.ref_name }}
           release_name: ${{ github.ref_name }}
           body: "Release created by GitHub Actions for ${{ github.ref_name }}"
+          token: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Upload JAR to Release
         uses: actions/upload-release-asset@v1
@@ -55,6 +56,7 @@ jobs:
           asset_path: target/pamscli-1.0-SNAPSHOT.jar
           asset_name: pamscli-1.0-SNAPSHOT.jar
           asset_content_type: application/java-archive
+          token: ${{ secrets.RELEASE_TOKEN }}
 
       - name: Upload patients.json to Release
         uses: actions/upload-release-asset@v1
@@ -63,3 +65,4 @@ jobs:
           asset_path: patients.json
           asset_name: patients.json
           asset_content_type: application/json
+          token: ${{ secrets.RELEASE_TOKEN }}
